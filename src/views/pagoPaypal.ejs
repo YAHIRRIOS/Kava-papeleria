@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/pagoPaypal.css">
+  <title>Pagar con PayPal</title>
+</head>
+<body>
+  <div class="container">
+    <img class="paypal-logo" src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal Logo">
+    <h2>Pago Seguro con PayPal</h2>
+
+    <!-- Botón real de PayPal -->
+    <div id="paypal-button-container"></div>
+  </div>
+
+  <!-- SDK DE PAYPAL SANDBOX -->
+  <script src="https://www.sandbox.paypal.com/sdk/js?client-id=AcnvthSR26ho-Z5g7P_QUTL84zff4BEjv4yDgH2lOlTMwcjwg5zcwyUFGA3qTQKiVyG2cf1j6DsRZois&currency=MXN&intent=capture"></script>
+
+  <script>
+    paypal.Buttons({
+      createOrder: function (data, actions) {
+        // Crear orden en el backend
+        return fetch('/pago/crear-orden', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(res => res.json())
+        .then(order => {
+          if (!order.id) {
+            throw new Error('No se recibió un orderID');
+          }
+          return order.id;
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Error al crear la orden de pago');
+        });
+      },
+
+      onApprove: function (data, actions) {
+        // Capturar la orden automáticamente
+        return actions.order.capture().then(function(details) {
+          const paymentID = details.id;
+
+          // Llamar al backend para registrar la orden
+          return fetch('/pago/capturar-orden', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ paymentID })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              window.location.href = '/pago/pagoExitoso';
+            } else {
+              alert('Error al procesar el pago');
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            alert('Error al procesar el pago');
+          });
+        });
+      },
+
+      onCancel: function () {
+        window.location.href = '/pago/pagoCancelado';
+      },
+
+      onError: function (err) {
+        console.error(err);
+        alert('Error al procesar el pago');
+      }
+    }).render('#paypal-button-container');
+  </script>
+</body>
+</html>

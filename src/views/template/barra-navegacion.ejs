@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Tienda</title>
+    <!-- <link rel="stylesheet" href="/css/Style-Index.css"> -->
+    <link rel="stylesheet" href="/css/barra-navegacion">
+</head>
+<body>
+    <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+        <div style="background: #ffdddd; color: #a00; padding: 10px; margin: 10px; border: 1px solid #a00;">
+          <%= errorMessage %>
+        </div>
+      <% } %>
+      
+      <header class="header">
+        <div class="logo-container">
+            <a href="/productos/catalogo">
+                <img style="width: 200px; height: 80px; border-radius: 15px; opacity: 90%;" src="/img/logo.png" alt="Logo">
+            </a>
+        </div>
+        <div class="search-container">
+            <div class="search-box">
+              <form action="/productos/buscar" method="GET" class="search-box">
+                <input type="text" name="nombre" class="search-bar" placeholder="Buscar tus productos aquí...!" required>
+                <button type="submit" class="search-btn">🔍</button>
+              </form>
+            </div>
+            <a href="#" class="nav-btn">Promociones</a>
+            <a href="/usuarios/historial-pedidos" class="nav-btn">Historial de Pedidos</a>
+
+        </div>
+        
+        <div class="header-icons">
+          <a href="/listaDeseos/verListaDeseos" class="icon-btn" id="wishlist-btn">❤️</a>
+          <a href="/usuarios/carrito" id="cart-button" class="icon-btn">🛒</a>
+      
+          <div class="user-dropdown">
+              <button class="icon-btn" id="account">👤</button>
+              <div class="user-dropdown-content">
+                  <a href="/usuarios/modificarDatos">Modificar Datos</a>
+                  <a href="/usuarios/logout">Cerrar Sesión</a>
+              </div>
+          </div>
+      </div>
+    </header>
+
+    <!-- Carrito lateral -->
+    <div class="overlay" id="overlay"></div>
+
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Carrito de compras</h2>
+            <button id="close-cart">✖</button>
+        </div>
+
+     <!-- Mostrar los productos del carrito -->
+<!-- Mostrar los productos del carrito -->
+<div class="cart-items">
+    <% if (carrito.length > 0) { %>
+      <% carrito.forEach(item => { %>
+        <div class="cart-item">
+          <img src="<%= item.producto.imagen %>" alt="<%= item.producto.nombre %>">
+          <div>
+            <p><%= item.producto.nombre %></p>
+            <p>$<%= item.producto.precio.toFixed(2) %></p>
+  
+            <!-- Formulario para actualizar cantidad -->
+            <form action="/usuarios/carrito/actualizar" method="POST">
+              <input type="hidden" name="productoId" value="<%= item.producto._id %>">
+              <select name="cantidad" onchange="this.form.submit()">
+                <% for (let i = 1; i <= item.producto.stock; i++) { %>
+                  <option value="<%= i %>" <%= i === item.cantidad ? "selected" : "" %>><%= i %></option>
+                <% } %>
+              </select>
+            </form>
+  
+            <a href="/usuarios/carrito/eliminar/<%= item.producto._id %>" class="remove">Eliminar</a>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <p>No hay productos en el carrito.</p>
+    <% } %>
+  </div>
+
+
+  <div class="cart-footer">
+    <p><strong>Subtotal:</strong> $<%= carrito.reduce((total, item) => total + (item.producto.precio * item.cantidad), 0).toFixed(2) %></p>
+
+    <% if (carrito.length > 0) { %>
+      <a href="/pago/seleccionarDireccion"><button class="checkout">Pagar</button></a>
+    <% } else { %>
+      <button class="checkout" disabled style="background-color: #ccc; cursor: not-allowed;">Pagar</button>
+    <% } %>
+
+    <a href="#" class="continue-shopping">Seguir Comprando</a>
+</div>
+    </div>
+
+    <!-- Script para manejo del carrito -->
+    <script>
+        const cartButton = document.getElementById('cart-button');
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const closeCart = document.getElementById('close-cart');
+        const overlay = document.getElementById('overlay');
+    
+        // Mostrar el carrito al hacer clic en el botón del carrito
+        cartButton.addEventListener('click', (event) => {
+            // Prevenir la acción por defecto (evitar recargar la página)
+            event.preventDefault();
+            
+            // Mostrar el carrito y la superposición
+            cartSidebar.classList.add('show-cart');
+            overlay.classList.add('show-overlay');
+        });
+    
+        // Cerrar el carrito al hacer clic en la "X"
+        closeCart.addEventListener('click', () => {
+            cartSidebar.classList.remove('show-cart');
+            overlay.classList.remove('show-overlay');
+        });
+    
+        // Cerrar el carrito al hacer clic fuera del carrito (en la superposición)
+        overlay.addEventListener('click', () => {
+            cartSidebar.classList.remove('show-cart');
+            overlay.classList.remove('show-overlay');
+        });
+    </script>
+    <script>
+        window.addEventListener('pageshow', function (event) {
+          if (event.persisted) {
+            // Esto indica que la página fue cargada desde el caché del navegador
+            window.location.reload(); // Fuerza una recarga desde el servidor
+          }
+        });
+      </script>
+    <script>
+      const userBtn = document.getElementById('account');
+      const dropdown = userBtn.closest('.user-dropdown');
+  
+      userBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          dropdown.classList.toggle('show');
+      });
+  
+      // Cerrar si se hace clic fuera
+      window.addEventListener('click', function (e) {
+          if (!dropdown.contains(e.target)) {
+              dropdown.classList.remove('show');
+          }
+      });
+  </script>
+  
+</body>
+</html>

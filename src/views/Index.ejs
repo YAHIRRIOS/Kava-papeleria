@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/css/index.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/barra-navegacion.css">
+    <title>Papelería Estrella</title>
+</head>
+
+<body>
+
+<%- include('template/barra-navegacion', { carrito}) %>
+
+    <main class="container">
+        <section class="products">
+            <div class="product-grid">
+                <% productos.forEach(producto => { %>
+                    <a href="/productos/detalle/<%= producto._id %>">
+                    <div class="product-card">
+                        <img src="<%= producto.imagen %>" alt="<%= producto.nombre %>">
+                        <h3><%= producto.nombre %></h3>
+                        <p class="price">$<%= producto.precio.toFixed(2) %></p>
+                        <p class="reviews">Stock disponible: <%= producto.stock %></p>
+                    </div>
+                </a>
+                <% }) %>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Añadir esta parte para evitar que se vea el producto con stock 0 cuando se retrocede
+        window.addEventListener('pageshow', function (event) {
+          if (event.persisted) {
+            // Esto indica que la página fue cargada desde el caché del navegador
+            window.location.reload(); // Fuerza una recarga desde el servidor
+          }
+        });
+    </script>
+</body>
+</html>
+
